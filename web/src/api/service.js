@@ -1,8 +1,14 @@
 import axios from 'axios'
 import Adapter from 'axios-mock-adapter'
-import { get } from 'lodash'
+import {
+  get
+} from 'lodash'
 import util from '@/libs/util'
-import { dataNotFound, errorCreate, errorLog } from './tools'
+import {
+  dataNotFound,
+  errorCreate,
+  errorLog
+} from './tools'
 import router from '@/router'
 import qs from 'qs'
 
@@ -12,7 +18,7 @@ import qs from 'qs'
 axios.defaults.retry = 1
 axios.defaults.retryDelay = 1000
 
-export function getErrorMessage (msg) {
+export function getErrorMessage(msg) {
   if (typeof msg === 'string') {
     return msg
   }
@@ -20,14 +26,18 @@ export function getErrorMessage (msg) {
     if (msg.code === 'token_not_valid') {
       util.cookies.remove('token')
       util.cookies.remove('uuid')
-      router.push({ path: '/login' })
+      router.push({
+        path: '/login'
+      })
       router.go(0)
       return '登录超时，请重新登录！'
     }
     if (msg.code === 'user_not_found') {
       util.cookies.remove('token')
       util.cookies.remove('uuid')
-      router.push({ path: '/login' })
+      router.push({
+        path: '/login'
+      })
       router.go(0)
       return '用户无效，请重新登录！'
     }
@@ -39,12 +49,14 @@ export function getErrorMessage (msg) {
   return msg
 }
 
-function createService () {
+function createService() {
   // 创建一个 axios 实例
   const service = axios.create({
-    baseURL: util.baseURL(),
+    baseURL: 'http://localhost:8000',
     timeout: 20000,
-    paramsSerializer: (params) => qs.stringify(params, { indices: false })
+    paramsSerializer: (params) => qs.stringify(params, {
+      indices: false
+    })
   })
   // 请求拦截
   service.interceptors.request.use(
@@ -64,7 +76,9 @@ function createService () {
         dataAxios = response
       }
       // 这个状态码是和后端约定的
-      const { code } = dataAxios
+      const {
+        code
+      } = dataAxios
       // 根据 code 进行判断
       if (code === undefined) {
         // 如果没有 code 代表这不是项目后端开发的接口 比如可能是 D2Admin 请求最新版本
@@ -82,7 +96,9 @@ function createService () {
             util.cookies.remove('token')
             util.cookies.remove('uuid')
             util.cookies.remove('refresh')
-            router.push({ path: '/login' })
+            router.push({
+              path: '/login'
+            })
             errorCreate(`${getErrorMessage(dataAxios.msg)}`)
             break
           case 404:
@@ -112,7 +128,9 @@ function createService () {
           refreshTken().then(res => {
             util.cookies.set('token', res.access)
           }).catch(e => {
-            router.push({ name: 'login' })
+            router.push({
+              name: 'login'
+            })
             router.go(0)
             error.message = '未认证，请登录'
           })
@@ -158,7 +176,7 @@ function createService () {
  * @description 创建请求方法
  * @param {Object} service axios 实例
  */
-function createRequestFunction (service) {
+function createRequestFunction(service) {
   // 校验是否为租户模式。租户模式把域名替换成 域名 加端口
   return function (config) {
     const token = util.cookies.get('token')
@@ -178,7 +196,7 @@ function createRequestFunction (service) {
         'Content-Type': get(config, 'headers.Content-Type', 'application/json')
       },
       timeout: 60000,
-      baseURL: util.baseURL(),
+      baseURL: 'http://localhost:8000',
       data: {},
       params: params
     }
@@ -215,7 +233,12 @@ const refreshTken = function () {
  * @param params
  * @param filename
  */
-export const downloadFile = function ({ url, data, method, filename }) {
+export const downloadFile = function ({
+  url,
+  data,
+  method,
+  filename
+}) {
   request({
     url: url,
     method: method,
@@ -225,7 +248,9 @@ export const downloadFile = function ({ url, data, method, filename }) {
   }).then(res => {
     const fileName = window.decodeURI(res.headers['content-disposition'].split('=')[1]) || filename + '.xls' || '文件导出.xls'
     if (res) {
-      const blob = new Blob([res.data], { type: 'charset=utf-8' })
+      const blob = new Blob([res.data], {
+        type: 'charset=utf-8'
+      })
       const elink = document.createElement('a')
       elink.download = fileName
       elink.style.display = 'none'
